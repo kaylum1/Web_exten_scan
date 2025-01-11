@@ -105,3 +105,15 @@ Connected to MongoDB
 to see the logs of the URLS
 
 http://localhost:3000/logs
+
+
+
+
+
+
+
+tp longinto mongoDB - use google signin
+
+
+
+render login - kaylumsmith@icloud.com / 
