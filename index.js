@@ -13,7 +13,8 @@ app.use(bodyParser.json());
 app.use(cors()); // Enable CORS for all routes
 
 // MongoDB connection
-const DB_URL = 'mongodb+srv://<username>:<password>@cluster.mongodb.net/urlLogger?retryWrites=true&w=majority';
+const DB_URL = 'mongodb+srv://kaylumsmith:HS0KKaCbX4pbFiMM@diss-server.beqfh.mongodb.net/urlLogger?retryWrites=true&w=majority';
+
 mongoose.connect(DB_URL, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('MongoDB connection error:', err));
