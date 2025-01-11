@@ -1,13 +1,16 @@
+// index.js
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const axios = require('axios');
 const cheerio = require('cheerio');
+const cors = require('cors');
 
 const app = express();
 const PORT = 3000;
 
 app.use(bodyParser.json());
+app.use(cors());
 
 // MongoDB connection
 const DB_URL = 'mongodb+srv://kaylumsmith:HS0KKaCbX4pbFiMM@diss-server.beqfh.mongodb.net/urlLogger?retryWrites=true&w=majority';
@@ -56,93 +59,22 @@ app.post('/log-url', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
-
-
-
-// Route to get URL info for popup
-app.get('/get-url-info', async (req, res) => {
-  const { url } = req.query;
-  try {
-    const urlInfo = await UrlLog.findOne({ url });
-    if (urlInfo) {
-      res.json({
-        url: urlInfo.url,
-        name: urlInfo.name,
-        isSecure: urlInfo.isSecure,
-      });
-    } else {
-      res.status(404).json({ message: 'URL not found' });
-    }
-  } catch (error) {
-    console.error('Error fetching URL info:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
-
-/*
-const express = require('express');
-const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// MongoDB connection string
-const DB_URL = 'mongodb+srv://kaylumsmith:HS0KKaCbX4pbFiMM@diss-server.beqfh.mongodb.net/urlLogger?retryWrites=true&w=majority';
-
-
-
-
-mongoose.connect(DB_URL, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
-
-// Define URL log schema and model
-const urlLogSchema = new mongoose.Schema({
-  url: String,
-  timestamp: { type: Date, default: Date.now }
-});
-
-const UrlLog = mongoose.model('UrlLog', urlLogSchema);
-
-// Middleware
-app.use(bodyParser.json());
-
-// Route to log URLs
-app.post('/log-url', async (req, res) => {
-  const { url } = req.body;
-  if (!url) {
-    return res.status(400).send('URL is required');
-  }
-
-  try {
-    const log = new UrlLog({ url });
-    await log.save();
-    res.status(200).send('URL logged successfully');
-  } catch (error) {
-    console.error('Error saving log:', error);
-    res.status(500).send('Internal server error');
-  }
-});
-
-// Route to get all logged URLs
+// Route to display all logged URLs
 app.get('/logs', async (req, res) => {
   try {
-    const logs = await UrlLog.find().sort({ timestamp: -1 });
-    res.status(200).json(logs);
+    const logs = await UrlLog.find({}).sort({ checkedAt: -1 });
+    let logHtml = '<h1>Logged URLs</h1><ul>';
+    logs.forEach((log) => {
+      logHtml += `<li><strong>Name:</strong> ${log.name} | <strong>URL:</strong> <a href="${log.url}" target="_blank">${log.url}</a> | <strong>Secure:</strong> ${log.isSecure ? 'Yes' : 'No'} | <strong>Checked At:</strong> ${log.checkedAt}</li>`;
+    });
+    logHtml += '</ul>';
+    res.send(logHtml);
   } catch (error) {
     console.error('Error fetching logs:', error);
     res.status(500).send('Internal server error');
   }
 });
 
-// Start the server
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
-
-*/
-
-
