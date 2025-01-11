@@ -14,5 +14,13 @@
     "mongodb": "^6.12.0",
     "mongoose": "^8.9.4"
   },
-  "description": ""
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kaylum1/Web_exten_scan.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kaylum1/Web_exten_scan/issues"
+  },
+  "homepage": "https://github.com/kaylum1/Web_exten_scan#readme"
 }
