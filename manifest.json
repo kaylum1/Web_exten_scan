@@ -1,11 +1,21 @@
+
+
 {
-    "manifest_version": 3,
-    "name": "URL Logger",
-    "version": "1.0",
-    "permissions": ["tabs", "activeTab", "scripting"],
-    "background": {
-      "service_worker": "background.js"
-    },
-    "host_permissions": ["<all_urls>"]
+  "manifest_version": 3,
+  "name": "URL Logger with HTTPS Checker",
+  "version": "1.0",
+  "description": "Logs URLs, checks HTTPS status, and displays webpage info.",
+  "permissions": ["tabs", "activeTab", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
+    
   }
-  
+}
+
+
+
