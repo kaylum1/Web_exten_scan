@@ -14,7 +14,12 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   });
   */
 
+
+
+
+
 // background.js
+/*
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete' && tab.url) {
     const url = new URL(tab.url);
@@ -36,3 +41,4 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       });
   }
 });
+*/

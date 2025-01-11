@@ -10,10 +10,10 @@ const app = express();
 const PORT = 3000;
 
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors()); // Enable CORS for all routes
 
 // MongoDB connection
-const DB_URL = 'mongodb+srv://kaylumsmith:HS0KKaCbX4pbFiMM@diss-server.beqfh.mongodb.net/urlLogger?retryWrites=true&w=majority';
+const DB_URL = 'mongodb+srv://<username>:<password>@cluster.mongodb.net/urlLogger?retryWrites=true&w=majority';
 mongoose.connect(DB_URL, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('MongoDB connection error:', err));
@@ -59,19 +59,23 @@ app.post('/log-url', async (req, res) => {
   }
 });
 
-// Route to display all logged URLs
-app.get('/logs', async (req, res) => {
+// Route to get URL info for popup
+app.get('/get-url-info', async (req, res) => {
+  const { url } = req.query;
   try {
-    const logs = await UrlLog.find({}).sort({ checkedAt: -1 });
-    let logHtml = '<h1>Logged URLs</h1><ul>';
-    logs.forEach((log) => {
-      logHtml += `<li><strong>Name:</strong> ${log.name} | <strong>URL:</strong> <a href="${log.url}" target="_blank">${log.url}</a> | <strong>Secure:</strong> ${log.isSecure ? 'Yes' : 'No'} | <strong>Checked At:</strong> ${log.checkedAt}</li>`;
-    });
-    logHtml += '</ul>';
-    res.send(logHtml);
+    const urlInfo = await UrlLog.findOne({ url });
+    if (urlInfo) {
+      res.json({
+        url: urlInfo.url,
+        name: urlInfo.name,
+        isSecure: urlInfo.isSecure,
+      });
+    } else {
+      res.status(404).json({ message: 'URL not found' });
+    }
   } catch (error) {
-    console.error('Error fetching logs:', error);
-    res.status(500).send('Internal server error');
+    console.error('Error fetching URL info:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
