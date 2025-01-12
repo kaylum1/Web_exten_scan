@@ -1,61 +1,53 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorClient
-from bs4 import BeautifulSoup
-import requests
 import datetime
 
+# Create FastAPI app
 app = FastAPI()
 
-# MongoDB connection
+# Enable CORS for all origins (to allow requests from the browser extension)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# MongoDB connection (replace with your actual connection string)
 MONGO_URI = 'mongodb+srv://kaylumsmith:HS0KKaCbX4pbFiMM@diss-server.beqfh.mongodb.net/urlLogger?retryWrites=true&w=majority'
 client = AsyncIOMotorClient(MONGO_URI)
 db = client["urlLogger"]        # Database name
 collection = db["urllogs"]      # Collection name
 
-# Pydantic model for request body
-class ScanRequest(BaseModel):
+# Pydantic model for incoming URL data
+class URLLog(BaseModel):
     url: str
 
-@app.post("/scan")
-async def scan_url(request: ScanRequest):
-    url = request.url
-
-    # Check if URL already scanned recently (e.g., within the last 7 days)
-    existing_scan = await collection.find_one({"url": url})
-    if existing_scan:
-        return {"message": "Existing result", "data": existing_scan}
-
+# Endpoint to log URLs
+@app.post("/log")
+async def log_url(data: URLLog):
+    print(f"Received URL: {data.url}")  # Log received URL
     try:
-        # Fetch the webpage content
-        response = requests.get(url)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.content, "html.parser")
-
-        # Example analysis (customize as needed)
-        uses_https = url.startswith("https")
-        tracker_count = len(soup.find_all("script", src=True))  # Count script tags with src attribute
-        cookie_count = len(response.cookies)
-
-        # Example score calculation
-        score = (50 if uses_https else 0) + (50 if tracker_count == 0 else 20)
-
-        # Create scan result
-        scan_result = {
-            "url": url,
-            "score": score,
-            "details": {
-                "uses_https": uses_https,
-                "tracker_count": tracker_count,
-                "cookie_count": cookie_count
-            },
+        log_entry = {
+            "url": data.url,
             "timestamp": datetime.datetime.utcnow()
         }
+        await collection.insert_one(log_entry)
+        print(f"URL logged successfully: {data.url}")  # Log successful insertion
+        return {"message": "URL logged successfully"}
+    except Exception as e:
+        print(f"Error logging URL: {e}")  # Log any errors
+        raise HTTPException(status_code=500, detail=f"Error logging URL: {e}")
 
-        # Store result in MongoDB
-        await collection.insert_one(scan_result)
-
-        return {"message": "New result", "data": scan_result}
-
-    except requests.RequestException as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching URL: {e}")
+# Startup event to test MongoDB connection
+@app.on_event("startup")
+async def startup_event():
+    try:
+        # Check if the connection to MongoDB works
+        await collection.count_documents({})
+        print("MongoDB connection successful")
+    except Exception as e:
+        print(f"Error connecting to MongoDB: {e}")
