@@ -1,20 +1,30 @@
+//Step 1: Initialize Express App
+/*
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+
+//Step 2: Middleware Configuration
+
+app.use(cors());
+app.use(bodyParser.json());
+
+
 // MongoDB connection string
 const DB_URL = 'mongodb+srv://kaylumsmith:HS0KKaCbX4pbFiMM@diss-server.beqfh.mongodb.net/urlLogger?retryWrites=true&w=majority';
 
 
-
+//Step 3: Connect to MongoDB
 
 mongoose.connect(DB_URL, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// Define URL log schema and model
+//Step 4: Define Mongoose Schema
+
 const urlLogSchema = new mongoose.Schema({
   url: String,
   timestamp: { type: Date, default: Date.now }
@@ -22,7 +32,9 @@ const urlLogSchema = new mongoose.Schema({
 
 const UrlLog = mongoose.model('UrlLog', urlLogSchema);
 
-// Middleware
+
+//Step 5: Create Scan Endpoint
+
 app.use(bodyParser.json());
 
 // Route to log URLs
@@ -42,7 +54,8 @@ app.post('/log-url', async (req, res) => {
   }
 });
 
-// Route to get all logged URLs
+// Step 6: Create History Endpoint
+
 app.get('/logs', async (req, res) => {
   try {
     const logs = await UrlLog.find().sort({ timestamp: -1 });
@@ -53,7 +66,9 @@ app.get('/logs', async (req, res) => {
   }
 });
 
-// Start the server
+//Step 7: Start the Server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+*/
