@@ -12,3 +12,4 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       .catch(error => console.error('Error logging URL:', error));  // Log any errors
   }
 });
+

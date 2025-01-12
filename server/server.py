@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorClient
+from urllib.parse import urlparse
 import datetime
 
 # Create FastAPI app
@@ -26,20 +27,39 @@ collection = db["urllogs"]      # Collection name
 class URLLog(BaseModel):
     url: str
 
+# Helper function to normalize URLs
+def normalize_url(url):
+    parsed_url = urlparse(url)
+    # Reconstruct the URL with only scheme and netloc (domain)
+    normalized = f"{parsed_url.scheme}://{parsed_url.netloc}"
+    return normalized.rstrip('/')  # Remove trailing slash if present
+
 # Endpoint to log URLs
 @app.post("/log")
 async def log_url(data: URLLog):
-    print(f"Received URL: {data.url}")  # Log received URL
+    # Normalize the URL before logging
+    url_to_log = normalize_url(data.url)
+
+    print(f"Received URL: {data.url}")
+    print(f"Normalized URL: {url_to_log}")
+
     try:
+        # Check if the normalized URL already exists in the database
+        existing_entry = await collection.find_one({"url": url_to_log})
+        if existing_entry:
+            print(f"Duplicate URL detected: {url_to_log}")
+            return {"message": "URL already logged", "url": url_to_log}
+
+        # If not a duplicate, insert the new URL
         log_entry = {
-            "url": data.url,
+            "url": url_to_log,
             "timestamp": datetime.datetime.utcnow()
         }
         await collection.insert_one(log_entry)
-        print(f"URL logged successfully: {data.url}")  # Log successful insertion
-        return {"message": "URL logged successfully"}
+        print(f"URL logged in MongoDB: {url_to_log}")
+        return {"message": "URL logged successfully", "url": url_to_log}
     except Exception as e:
-        print(f"Error logging URL: {e}")  # Log any errors
+        print(f"Error logging URL: {e}")
         raise HTTPException(status_code=500, detail=f"Error logging URL: {e}")
 
 # Startup event to test MongoDB connection
