@@ -4,6 +4,74 @@ function normalizeUrl(url) {
     return `${parsedUrl.protocol}//${parsedUrl.hostname}`.toLowerCase().replace(/\/$/, ''); // Remove trailing slash and convert to lowercase
   }
   
+  // Handle button click to fetch and display detailed info for the current URL
+  document.getElementById('print-database-button').addEventListener('click', () => {
+    console.log('Button clicked! Retrieving current tab URL.');
+  
+    // Get the current tab's URL
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs.length === 0) {
+        console.error('No active tab found.');
+        document.getElementById('output').textContent = 'No active tab found.';
+        return;
+      }
+  
+      const currentTabUrl = normalizeUrl(tabs[0].url); // Normalize the current tab's URL
+      console.log(`Normalized current tab URL: ${currentTabUrl}`);
+  
+      // Send a message to the background script to fetch detailed logs
+      chrome.runtime.sendMessage({ action: 'getFullDatabaseWithInfo' }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.error('Error communicating with background script:', chrome.runtime.lastError.message);
+          document.getElementById('output').textContent = 'Error communicating with background script.';
+          return;
+        }
+  
+        console.log('Detailed database response:', JSON.stringify(response, null, 2)); // Log the full response
+  
+        // Ensure response.data.logs is an array
+        const logs = response.data && response.data.logs ? response.data.logs : []; // Safely extract logs array
+  
+        if (logs.length === 0) {
+          console.error('Logs array is empty or missing.');
+          document.getElementById('output').textContent = 'No logs found in the database.';
+          return;
+        }
+  
+        // Find the matching URL in the logs
+        const matchingEntry = logs.find(entry => normalizeUrl(entry.url) === currentTabUrl);
+  
+        if (matchingEntry) {
+          console.log(`Matching URL found: ${matchingEntry.url}`);
+          
+          // Dynamically display all fields for the matching entry
+          let outputHtml = `<strong>URL Info:</strong><br>`;
+          for (const [key, value] of Object.entries(matchingEntry)) {
+            if (key === "_id") continue; // Skip MongoDB internal ID
+            outputHtml += `${key}: ${typeof value === 'object' ? JSON.stringify(value, null, 2) : value}<br>`;
+          }
+  
+          document.getElementById('output').innerHTML = outputHtml;
+        } else {
+          console.log(`No matching URL found for: ${currentTabUrl}`);
+          document.getElementById('output').textContent = `No matching URL found for: ${currentTabUrl}`;
+        }
+      });
+    });
+  });
+  
+
+
+
+
+
+/*
+// Function to normalize a URL
+function normalizeUrl(url) {
+    const parsedUrl = new URL(url);
+    return `${parsedUrl.protocol}//${parsedUrl.hostname}`.toLowerCase().replace(/\/$/, ''); // Remove trailing slash and convert to lowercase
+  }
+  
   // Handle button click to fetch and display database info for the current URL
   document.getElementById('print-database-button').addEventListener('click', () => {
     console.log('Button clicked! Retrieving current tab URL.');
@@ -69,6 +137,13 @@ function normalizeUrl(url) {
   
   
   
+  */
+
+
+
+
+
+
   
 
 

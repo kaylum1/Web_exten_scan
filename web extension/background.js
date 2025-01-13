@@ -28,7 +28,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'fetchData' && request.url) {
     const normalizedUrl = new URL(request.url).origin; // Normalize to base URL
-    
+
     console.log(`Attempting to retrieve data for normalized URL: ${normalizedUrl}`);
 
     chrome.storage.local.get([normalizedUrl], (result) => {
@@ -65,10 +65,29 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // Keeps the message channel open for asynchronous response
   }
 
+  if (request.action === 'getFullDatabaseWithInfo') {
+    console.log('Received request to get the detailed database from MongoDB');
+
+    // Fetch the detailed database from the backend
+    fetch('http://localhost:8000/getAllLogsAndInfo', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Detailed database retrieved:', data);
+        sendResponse({ success: true, data: data });
+      })
+      .catch(error => {
+        console.error('Error retrieving detailed database:', error);
+        sendResponse({ success: false, error: 'Failed to retrieve detailed database' });
+      });
+
+    return true; // Keeps the message channel open for asynchronous response
+  }
+
   // Handle invalid requests
   sendResponse({ success: false, message: 'Invalid action' });
 });
-
-
 
 

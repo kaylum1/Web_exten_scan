@@ -87,6 +87,27 @@ async def get_all_logs():
         print(f"Error fetching logs: {e}")
         raise HTTPException(status_code=500, detail=f"Error fetching logs: {e}")
 
+@app.get("/getAllLogsAndInfo")
+async def get_all_logs_and_info():
+    try:
+        # Fetch all documents from the collection
+        logs_cursor = collection.find({})
+        logs = await logs_cursor.to_list(length=None)  # Convert cursor to list
+
+        # Convert ObjectId to string and ensure all fields are JSON serializable
+        formatted_logs = []
+        for log in logs:
+            log["_id"] = str(log["_id"])  # Convert ObjectId to string
+            formatted_logs.append(log)
+
+        # Return the full documents, including all fields
+        return {"success": True, "logs": formatted_logs}
+    except Exception as e:
+        print(f"Error fetching detailed logs: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching detailed logs: {e}")
+
+
+
 # Startup event to test MongoDB connection
 @app.on_event("startup")
 async def startup_event():
