@@ -86,8 +86,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // Keeps the message channel open for asynchronous response
   }
 
+  if (request.action === 'runScan') {
+    console.log('Received request to run web scan');
+  
+    // Fetch to trigger Python scripts on the backend server (port updated to 8000)
+    fetch('http://localhost:8000/run-scan')
+      .then(response => response.json())
+      .then(data => {
+        console.log('Scan result:', data);
+        sendResponse({ result: "scan sucesfull" });
+      })
+      .catch(error => {
+        console.error('Error running scan:', error);
+        sendResponse({ result: 'Error running scan.' });
+      });
+  
+    return true; // Keeps the message channel open for async response
+  }
+
   // Handle invalid requests
+  console.warn('Invalid action received:', request.action);
   sendResponse({ success: false, message: 'Invalid action' });
 });
-
-

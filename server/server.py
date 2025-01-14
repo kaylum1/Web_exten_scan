@@ -3,10 +3,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorClient
 from urllib.parse import urlparse
+
+import subprocess
 import datetime
+
+
+
+
 
 # Create FastAPI app
 app = FastAPI()
+
+
 
 # Enable CORS for all origins (to allow requests from the browser extension)
 app.add_middleware(
@@ -117,6 +125,82 @@ async def startup_event():
         print("MongoDB connection successful")
     except Exception as e:
         print(f"Error connecting to MongoDB: {e}")
+
+
+
+
+@app.get("/run-scan")
+async def run_scan():
+    try:
+        # List of all scanner scripts to run
+        scanner_scripts = [
+            "secuirty-checks/Scanner-HTTPS-Check.py",
+            "secuirty-checks/Scanner-Security-Headers-Check.py",
+            "secuirty-checks/Scanner-Cookie-Security-Check.py",
+            "secuirty-checks/Scanner-CSRF-Check.py",
+            "secuirty-checks/Scanner-Directory-Listing-Check.py",
+            "secuirty-checks/Scanner-Open-Redirect-Check.py",
+            "secuirty-checks/Scanner-Sensitive-Data-Exposure-Check.py",
+            "secuirty-checks/Scanner-SQL-Injection-Check.py",
+            "secuirty-checks/Scanner-Subdomain-Takeover.py",
+            "secuirty-checks/Scanner-XSS-Check.py",
+            "secuirty-checks/SSL-TLS-Configuration-Check.py",
+            "secuirty-checks/Scanner-Broken-Authentication-and-Session-Management-Check.py",
+            "secuirty-checks/Scanner-Score-Calculator.py"
+        ]
+
+        # Dictionary to store the results of each scan
+        result = {}
+
+        # Run each scanner script and collect its output
+        for script in scanner_scripts:
+            output = subprocess.check_output(['python', script]).decode('utf-8')
+            result[script] = output
+
+        return result
+
+    except subprocess.CalledProcessError as e:
+        raise HTTPException(status_code=500, detail=f"Error running scan: {str(e)}")
+
+
+
+
+
+
+
+'''
+
+@app.get("/run-scan")
+async def run_scan():
+    try:
+        https_check_output = subprocess.check_output(['python', 'Scanner-HTTPS-Check.py']).decode('utf-8')
+        headers_check_output = subprocess.check_output(['python', 'Scanner-Security-Headers-Check.py']).decode('utf-8')
+        score_calc_output = subprocess.check_output(['python', 'Scanner-Score-Calculator.py']).decode('utf-8')
+        
+
+        result = {
+            "HTTPS Check": https_check_output,
+            "Security Headers Check": headers_check_output,
+            "Score Calculator": score_calc_output,
+        }
+        return result
+    except subprocess.CalledProcessError as e:
+        raise HTTPException(status_code=500, detail=f"Error running scan: {str(e)}")
+'''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

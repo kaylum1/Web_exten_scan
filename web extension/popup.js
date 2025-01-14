@@ -3,6 +3,19 @@ function normalizeUrl(url) {
     const parsedUrl = new URL(url);
     return `${parsedUrl.protocol}//${parsedUrl.hostname}`.toLowerCase().replace(/\/$/, ''); // Remove trailing slash and convert to lowercase
   }
+  document.getElementById('run-scan-button').addEventListener('click', () => {
+
+    document.getElementById('output').innerText = 'Loading...';
+
+    chrome.runtime.sendMessage({ action: "runScan" }, (response) => {
+      if (response && response.result) {
+        document.getElementById('output').innerText = response.result;
+      } else {
+        document.getElementById('output').innerText = "Scan failed.";
+      }
+    });
+  });
+  
   
   // Handle button click to fetch and display detailed info for the current URL
   document.getElementById('print-database-button').addEventListener('click', () => {
