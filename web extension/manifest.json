@@ -8,9 +8,7 @@
   "tabs",
   "activeTab",
   "storage",
-  "scripting",
-  "http://localhost/*",
-  "storage"
+  "scripting"
   ],
   "background": {
     "service_worker": "background.js"
