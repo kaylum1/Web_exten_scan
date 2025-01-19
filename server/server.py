@@ -6,14 +6,23 @@ from urllib.parse import urlparse
 
 import subprocess
 import datetime
+import psutil
+import os
+import signal
 
-
+from fastapi.responses import JSONResponse
 
 
 
 # Create FastAPI app
 app = FastAPI()
 
+
+'''
+#to start server from web needed to be added
+server_process = None  # To track the server process
+'''
+server_running = True
 
 
 # Enable CORS for all origins (to allow requests from the browser extension)
@@ -41,6 +50,20 @@ def normalize_url(url):
     # Reconstruct the URL with only scheme and netloc (domain)
     normalized = f"{parsed_url.scheme}://{parsed_url.netloc}"
     return normalized.rstrip('/')  # Remove trailing slash if present
+
+
+
+
+
+
+
+
+
+
+#//======================================================================================
+#//LOGGING URLS TO DATABASE step 3:
+#//======================================================================================
+
 
 # Endpoint to log URLs
 @app.post("/log")
@@ -70,6 +93,12 @@ async def log_url(data: URLLog):
         print(f"Error logging URL: {e}")
         raise HTTPException(status_code=500, detail=f"Error logging URL: {e}")
 
+
+
+
+
+
+
 # Endpoint to retrieve all logs from MongoDB
 @app.get("/getAllLogs")
 async def get_all_logs():
@@ -95,6 +124,15 @@ async def get_all_logs():
         print(f"Error fetching logs: {e}")
         raise HTTPException(status_code=500, detail=f"Error fetching logs: {e}")
 
+
+
+
+ # //======================================================================================
+ # //PRINT SCORE step 4 + PRINT database step 4:
+ # //======================================================================================
+
+
+
 @app.get("/getAllLogsAndInfo")
 async def get_all_logs_and_info():
     try:
@@ -116,6 +154,29 @@ async def get_all_logs_and_info():
 
 
 
+
+
+
+
+@app.get("/get-score")
+async def get_scores():
+    try:
+        # Fetch all documents and project only the 'score' field
+        logs_cursor = collection.find({}, {"_id": 0, "score": 1})  # Exclude '_id' and include only 'score'
+        scores = await logs_cursor.to_list(length=None)  # Convert cursor to list
+
+        # Extract scores into a simple list
+        score_list = [log["score"] for log in scores]
+
+        return {"success": True, "scores": score_list}
+    except Exception as e:
+        print(f"Error fetching scores: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching scores: {e}")
+
+
+
+
+
 # Startup event to test MongoDB connection
 @app.on_event("startup")
 async def startup_event():
@@ -128,6 +189,12 @@ async def startup_event():
 
 
 
+
+
+
+ # //======================================================================================
+ # //RUN WEB SCAN step 3:
+ # //======================================================================================
 
 @app.get("/run-scan")
 async def run_scan():
@@ -165,6 +232,122 @@ async def run_scan():
 
 
 
+
+
+
+
+
+  #//======================================================================================
+  #//STARTING SERVER FROM WEB step 2:
+  #//======================================================================================
+
+
+@app.get("/health")
+def health_check():
+    # Add logic to check database connectivity
+    db_status = check_database_connection()
+    server_status = "running"  # You can dynamically determine this
+    return JSONResponse({"server_status": server_status, "database_status": db_status})
+
+def check_database_connection():
+    try:
+        # Replace with actual database connection check
+        return "connected"
+    except:
+        return "disconnected"
+
+@app.post("/control")
+def control_server(action: str):
+    global server_running
+    if action == "start" and not server_running:
+        # Logic to start the server (for testing, toggle the state)
+        server_running = True
+        return JSONResponse({"message": "Server started", "server_status": "running"})
+    elif action == "stop" and server_running:
+        # Logic to stop the server (toggle state)
+        server_running = False
+        return JSONResponse({"message": "Server stopped", "server_status": "stopped"})
+    else:
+        return JSONResponse({"message": "Invalid action or server already in desired state"}, status_code=400)
+'''
+# Endpoint to start the server
+@app.post("/start-server")
+async def start_server():
+    global server_process
+    try:
+        # Check if the server is already running
+        if server_process and server_process.poll() is None:
+            print("Server is already running.")
+            return {"status": "running", "message": "Server is already running!"}
+
+        # Start the FastAPI server using uvicorn and output logs to the terminal
+        print("Starting the server...")
+        server_process = subprocess.Popen(
+            ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000", "--reload"],
+            stdout=None,  # Send stdout directly to the terminal
+            stderr=None   # Send stderr directly to the terminal
+        )
+
+        # Ensure the process started correctly
+        if server_process.poll() is not None:
+            raise Exception("Server process terminated immediately after starting.")
+
+        print("Server started successfully.")
+        return {"status": "success", "message": "Server started successfully!"}
+    except Exception as e:
+        print(f"Error while starting server: {e}")
+        return {"status": "error", "message": str(e)}
+
+
+
+
+
+@app.post("/stop-server")
+async def stop_server():
+    global server_process
+    try:
+        if server_process:
+            print(f"server_process status before stopping: {server_process}")
+
+            # Attempt to terminate the server process
+            server_process.terminate()
+            server_process.wait(timeout=5)  # Wait for the process to terminate
+
+            # Check if the process has stopped
+            if server_process.poll() is None:
+                print("Failed to terminate the server process.")
+                return {"status": "error", "message": "Failed to stop the server process."}
+
+            # Clear the global process reference
+            server_process = None
+            print("Server stopped successfully.")
+            return {"status": "success", "message": "Server stopped successfully!"}
+        else:
+            print("No server is currently running.")
+            return {"status": "error", "message": "No server is running!"}
+    except Exception as e:
+        print(f"Error while stopping server: {e}")
+        return {"status": "error", "message": str(e)}
+
+
+
+
+
+
+# Endpoint to check server status
+@app.get("/server-status")
+async def server_status():
+    try:
+        for process in psutil.process_iter(attrs=['name', 'cmdline']):
+            if "uvicorn" in process.info['cmdline']:
+                return {"status": "running"}
+        return {"status": "stopped"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+
+'''
 
 
 

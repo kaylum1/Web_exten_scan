@@ -5,7 +5,7 @@ https://dashboard.render.com/web/srv-cu1c7152ng1s73eaf4ng/deploys/dep-cu1docjqf0
 
 
 
-
+chrome://extensions/
 
 
 

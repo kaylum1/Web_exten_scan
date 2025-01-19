@@ -1,5 +1,177 @@
 <!DOCTYPE html>
 <html>
+<head>
+  <title>Web Scan Extension</title>
+  <style>
+    /* General Body Styling */
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      padding: 20px;
+      margin: 0;
+      background-color: #f0f2f5;
+      color: #333;
+    }
+
+    /* Main Container */
+    #main_page, #settings-view {
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      max-width: 400px;
+      margin: 20px auto;
+    }
+
+    /* Buttons */
+    button {
+      display: block;
+      width: 100%;
+      padding: 12px 20px;
+      margin: 10px 0;
+      font-size: 16px;
+      font-weight: bold;
+      color: #ffffff;
+      background-color: #007bff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+      transform: scale(1.02);
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    /* Headers */
+    h2, h3 {
+      text-align: center;
+      margin: 10px 0;
+      color: #007bff;
+    }
+
+    /* Toggle Buttons Styled as a Row */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 15px 0;
+      padding: 12px 20px;
+      background-color: #007bff;
+      color: #ffffff;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .toggle-row:hover {
+      background-color: #0056b3;
+    }
+
+    .toggle-row input[type="checkbox"] {
+      margin-right: 15px;
+      transform: scale(1.5);
+      cursor: pointer;
+    }
+
+ 
+    /* Output Box Styling */
+    #output {
+    margin-top: 15px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    background-color: #f9f9f9; /* Very light grey center */
+    color: #333333; /* Darker text for contrast */
+    border: 2px solid #007bff; /* Blue outline */
+    border-radius: 5px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Slight shadow for depth */
+    max-height: 200px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    }
+
+
+    /* Back Button in Settings */
+    #back-button {
+      background-color: #6c757d;
+    }
+
+    #back-button:hover {
+      background-color: #565e64;
+    }
+
+
+
+    html, body {
+    width: 360px; /* Standardized width */
+    height: 500px; /* Standardized height */
+    margin: 0; /* Remove default margin */
+    padding: 0; /* Remove default padding */
+    overflow: hidden; /* Prevent scrollbars */
+    background-color: #f0f2f5; /* Match background color */
+    font-family: 'Roboto', Arial, sans-serif; /* Ensure consistent font */
+    }
+
+    /* Main Container */
+    #main_page, #settings-view {
+    width: 100%; /* Ensure container fills the width */
+    height: 100%; /* Ensure container fills the height */
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    box-sizing: border-box; /* Include padding in element's dimensions */
+    }
+  </style>
+</head>
+<body>
+  <div id="main_page">
+    <h3>Web Scan Extension</h3>
+    <button id="settings-button">Settings</button>
+    <button id="run-scan-button">Run Web Scan</button>
+    <button id="print-score-button">Print Score</button>
+    <button id="print-database-button">Print Database</button>
+    <div id="output">
+      <!-- Placeholder text for the output -->
+      No data yet. Run a scan to see results here.
+    </div>
+  </div>
+
+  
+  
+
+  <div id="settings-view" style="display: none;">
+    <h2>Extension Settings</h2>
+
+    <div class="toggle-row">
+      <input type="checkbox" id="ad-blocker-toggle" />
+      <label for="ad-blocker-toggle" style="margin: 0;">Enable Ad Blocker</label>
+    </div>
+
+    <div class="toggle-row">
+      <input type="checkbox" id="cookie-decliner-toggle" />
+      <label for="cookie-decliner-toggle" style="margin: 0;">Enable Cookie Decliner</label>
+    </div>
+    <button id="back-button">Back</button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
+
+
+
+<!--
+<!DOCTYPE html>
+<html>
   <head>
     <title>Web Scan Extension</title>
     <style>
@@ -26,12 +198,31 @@
     </style>
   </head>
   <body>
+    <div id = main_page>
     
-    <h3>Web Scan Extension</h3>
-    <button id="run-scan-button">Run Web Scan</button>
-    
-    <button id="print-database-button">Print Database</button>
-    <div id="output"></div>
+  
+  
+        <button id="settings-button">Settings</button>
+        <h3>Web Scan Extension</h3>
+        <button id="run-scan-button">Run Web Scan</button>
+        <button id="print-score-button">Print Score</button>
+        <button id="print-database-button">Print Database</button>
+        <div id="output"></div>
+        
+    </div>
+    <div id="settings-view" style="display: none;">
+
+        <h2>Extension Settings</h2>
+        <label for="ad-blocker-toggle">Ad Blocker:</label>
+        <input type="checkbox" id="ad-blocker-toggle" />
+
+        <label for="cookie-decliner-toggle">Cookie Decliner:</label>
+        <input type="checkbox" id="cookie-decliner-toggle" />
+
+
+        <button id="back-button">Back</button>
+    </div>
     <script src="popup.js"></script>
   </body>
 </html>
+-->
