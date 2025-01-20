@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
   //COOKIE DECLINER step 1:
   //======================================================================================
 
-
+/*
   // On page load, retrieve the cookie decliner setting and set the toggle state
 document.addEventListener('DOMContentLoaded', () => {
     chrome.storage.sync.get('cookieDeclinerEnabled', (data) => {
@@ -247,7 +247,23 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log(`Cookie Decliner ${isEnabled ? 'enabled' : 'disabled'}`);
     });
   });
+  */
+  document.addEventListener("DOMContentLoaded", () => {
+    const toggle = document.getElementById("cookie-decliner-toggle");
   
+    // Load the current state of the cookie decliner toggle
+    chrome.storage.sync.get("cookieDeclinerEnabled", (data) => {
+      toggle.checked = data.cookieDeclinerEnabled || false;
+    });
+  
+    // Listen for toggle changes
+    toggle.addEventListener("change", () => {
+      const isEnabled = toggle.checked;
+      chrome.storage.sync.set({ cookieDeclinerEnabled: isEnabled }, () => {
+        console.log(`Cookie Decliner ${isEnabled ? "enabled" : "disabled"}`);
+      });
+    });
+  });
 
   
 

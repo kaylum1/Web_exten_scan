@@ -220,7 +220,8 @@ function blockAds(details) {
   //======================================================================================
   //COOKIE DECLINER step 2:
   //======================================================================================
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+/*
+  chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete' && tab.url.startsWith('http')) {
     chrome.storage.sync.get('cookieDeclinerEnabled', (data) => {
       if (data.cookieDeclinerEnabled) {
@@ -233,7 +234,25 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   }
 });
 
+*/
+// Initialize the cookie decliner setting when the extension is installed
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.storage.sync.set({ cookieDeclinerEnabled: false });
+});
 
+// Listen for tab updates and inject cookieDecliner.js if enabled
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === "complete" && tab.url.startsWith("http")) {
+    chrome.storage.sync.get("cookieDeclinerEnabled", (data) => {
+      if (data.cookieDeclinerEnabled) {
+        chrome.scripting.executeScript({
+          target: { tabId: tabId },
+          files: ["cookieDecliner.js"] // Updated file name
+        });
+      }
+    });
+  }
+});
 
 
 

@@ -3,7 +3,7 @@
 //======================================================================================
 
 
-
+/*
 
 // Comprehensive list of selectors for "Decline" or "Reject" buttons in cookie banners
 const declineButtonSelectors = [
@@ -56,4 +56,40 @@ function checkAndDeclineCookies() {
   setTimeout(() => {
     clearInterval(intervalId);
   }, 10000);
-  
+  */
+
+// List of common selectors for "Decline" or "Reject" buttons
+const declineButtonSelectors = [
+  '#onetrust-reject-all-handler',
+  'button:contains("Reject")',
+  'button:contains("Decline")',
+  'button:contains("Deny")',
+  '[id*="reject"]',
+  '[id*="decline"]',
+  '[id*="deny"]',
+  '[class*="reject"]',
+  '[class*="decline"]',
+  '[class*="deny"]',
+  '[aria-label*="reject"]',
+  '[aria-label*="decline"]',
+  '[aria-label*="deny"]'
+];
+
+// Function to click "Decline" button
+function declineCookies() {
+  for (const selector of declineButtonSelectors) {
+    const button = document.querySelector(selector);
+    if (button) {
+      console.log("Cookie banner detected, declining cookies.");
+      button.click();
+      return; // Stop once a button is clicked
+    }
+  }
+}
+
+// Run the function immediately and periodically for delayed banners
+declineCookies();
+const interval = setInterval(declineCookies, 1000);
+
+// Stop after 10 seconds to prevent unnecessary executions
+setTimeout(() => clearInterval(interval), 10000);
